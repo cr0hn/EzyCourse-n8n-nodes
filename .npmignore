@@ -1,0 +1,8 @@
+__tests__/
+docs/
+.env*
+.eslintrc.js
+gulpfile.js
+tsconfig.json
+CLAUDE.md
+*.test.ts

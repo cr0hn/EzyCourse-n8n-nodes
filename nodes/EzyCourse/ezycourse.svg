@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 60 60">
+  <rect width="60" height="60" rx="12" fill="#FF6B35"/>
+  <g fill="#FFFFFF">
+    <!-- Graduation cap base (trapezoid) -->
+    <polygon points="30,12 52,24 30,33 8,24" />
+    <!-- Cap top (square on top) -->
+    <rect x="22" y="10" width="16" height="4" rx="1"/>
+    <!-- Tassel string -->
+    <rect x="46" y="24" width="2" height="12" rx="1"/>
+    <!-- Tassel ball -->
+    <circle cx="47" cy="37" r="3"/>
+    <!-- Book/diploma below cap -->
+    <rect x="18" y="36" width="24" height="14" rx="2"/>
+    <rect x="21" y="40" width="18" height="2" rx="1" fill="#FF6B35"/>
+    <rect x="21" y="44" width="12" height="2" rx="1" fill="#FF6B35"/>
+  </g>
+</svg>
