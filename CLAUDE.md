@@ -43,5 +43,21 @@ ACCESS_TOKEN=your-access-token
 SIGNATURE_TOKEN=your-signature-token
 WEBHOOK_URL=https://abc123.ngrok.io/webhook/uuid
 
+## Build & publish
+- `npm run build` — compila TypeScript + copia SVGs a dist/ (gulp)
+- `npm run dev` — watch mode
+- `npm run lint` — ESLint
+- `npm publish --access public` — publicar en npm (token en ~/.npmrc)
+- `npm pkg fix` — normalizar repository.url si npm avisa al publicar
+- Versión actual en npm: 0.1.0
+
+## TODO pendiente
+- Verificar qué header usa EzyCourse para la firma HMAC: enviar un webhook real
+  desde el dashboard y loguear los headers que llegan. El código prueba en orden:
+  x-ezycourse-signature → x-webhook-signature → x-hub-signature-256
+
+## Assets
+- SVG oficial EzyCourse: https://f.ezycourse.net/2456/cm8qwjlaa008e1f8z99u5a7ue.svg
+
 ## Commits
 Always commit as: Dani <cr0hn@cr0hn.com>
