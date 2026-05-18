@@ -1,6 +1,6 @@
 {
   "name": "n8n-nodes-ezycourse",
-  "version": "0.1.0",
+  "version": "0.1.2",
   "description": "n8n community nodes for EzyCourse platform integration — triggers and actions for student management, enrollments, sales, and course progress",
   "keywords": [
     "n8n-community-node-package",
