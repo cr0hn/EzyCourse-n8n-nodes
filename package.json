@@ -10,14 +10,14 @@
     "elearning"
   ],
   "license": "MIT",
-  "homepage": "https://github.com/cr0hn/n8n-nodes-ezycourse",
+  "homepage": "https://github.com/cr0hn/EzyCourse-n8n-nodes",
   "author": {
     "name": "Dani",
     "email": "cr0hn@cr0hn.com"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/cr0hn/n8n-nodes-ezycourse.git"
+    "url": "https://github.com/cr0hn/EzyCourse-n8n-nodes.git"
   },
   "main": "index.js",
   "scripts": {

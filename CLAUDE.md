@@ -2,6 +2,7 @@
 
 ## What this is
 An n8n community node package for EzyCourse-powered platforms (e.g. alicebob.io).
+GitHub: https://github.com/cr0hn/EzyCourse-n8n-nodes
 Published on npm as `n8n-nodes-ezycourse`.
 
 ## Structure
