@@ -44,4 +44,45 @@ describe('HMAC-SHA256 signature verification', () => {
     const sig2 = computeHmac(body, secret);
     expect(sig1).toBe(sig2);
   });
+
+  it('accepts raw body with whitespace (body not re-serialized)', () => {
+    // Simulates rawBody arriving with extra spaces — HMAC must be computed
+    // on exactly this string, not on JSON.stringify(JSON.parse(body))
+    const rawBodyWithSpaces = '{ "id": 1, "email": "student@example.com", "event": "new_signup" }';
+    const sig = computeHmac(rawBodyWithSpaces, secret);
+    expect(verifyWebhookSignature(rawBodyWithSpaces, secret, sig)).toBe(true);
+  });
+
+  it('rejects when raw body has spaces but signature was made from compact JSON', () => {
+    const compactBody = JSON.stringify({ id: 1, email: 'student@example.com', event: 'new_signup' });
+    const sig = computeHmac(compactBody, secret);
+    const rawBodyWithSpaces = '{ "id": 1, "email": "student@example.com", "event": "new_signup" }';
+    // Different byte sequence → different HMAC → should fail
+    expect(verifyWebhookSignature(rawBodyWithSpaces, secret, sig)).toBe(false);
+  });
+
+  it('rejects an empty secret', () => {
+    const sig = computeHmac(body, '');
+    // Valid HMAC with empty secret should NOT be accepted against a non-empty secret
+    expect(verifyWebhookSignature(body, secret, sig)).toBe(false);
+  });
+
+  it('accepts valid HMAC when secret is empty (edge case)', () => {
+    const emptySecret = '';
+    const sig = computeHmac(body, emptySecret);
+    expect(verifyWebhookSignature(body, emptySecret, sig)).toBe(true);
+  });
+
+  it('accepts valid HMAC for an empty body', () => {
+    const emptyBody = '';
+    const sig = computeHmac(emptyBody, secret);
+    expect(verifyWebhookSignature(emptyBody, secret, sig)).toBe(true);
+  });
+
+  it('rejects a non-hex header of correct hex length', () => {
+    // 64 chars but non-hex (contains 'g') — Buffer.from(..., 'hex') silently truncates,
+    // causing a length mismatch caught by timingSafeEqual → returns false
+    const nonHexHeader = 'g'.repeat(64);
+    expect(verifyWebhookSignature(body, secret, nonHexHeader)).toBe(false);
+  });
 });

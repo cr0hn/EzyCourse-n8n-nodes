@@ -19,6 +19,17 @@ describe('Field mapping and transformations', () => {
     it('leaves URL without trailing slash unchanged', () => {
       expect(normalizeBaseUrl('https://academy.com')).toBe('https://academy.com');
     });
+
+    it('removes only one trailing slash (double slash leaves one)', () => {
+      // regex /\/$/ strips the last slash; a second call would strip the next one.
+      // Documenting the actual behaviour so any future change is explicit.
+      const result = normalizeBaseUrl('https://academy.com//');
+      expect(result).toBe('https://academy.com/');
+    });
+
+    it('handles URL with path and trailing slash', () => {
+      expect(normalizeBaseUrl('https://academy.com/api/')).toBe('https://academy.com/api');
+    });
   });
 
   describe('product type values', () => {
@@ -49,6 +60,26 @@ describe('Field mapping and transformations', () => {
 
     it('filters out invalid values', () => {
       expect(parseTagIds('1,abc,3')).toEqual([1, 3]);
+    });
+
+    it('returns empty array for empty string', () => {
+      expect(parseTagIds('')).toEqual([]);
+    });
+
+    it('parses a single tag ID', () => {
+      expect(parseTagIds('42')).toEqual([42]);
+    });
+
+    it('handles leading and trailing spaces in the full string', () => {
+      expect(parseTagIds(' 1 , 2 , 3 ')).toEqual([1, 2, 3]);
+    });
+
+    it('filters out all values when none are numeric', () => {
+      expect(parseTagIds('abc,def,ghi')).toEqual([]);
+    });
+
+    it('handles duplicate IDs (no deduplication)', () => {
+      expect(parseTagIds('1,1,2')).toEqual([1, 1, 2]);
     });
   });
 });
