@@ -85,7 +85,7 @@ export const tagFields: INodeProperties[] = [
     name: 'userId',
     type: 'number',
     required: true,
-    default: 0,
+    default: null,
     displayOptions: {
       show: {
         resource: ['tag'],
@@ -93,6 +93,6 @@ export const tagFields: INodeProperties[] = [
         identifyBy: ['userId'],
       },
     },
-    description: 'Numeric ID of the student',
+    description: 'Numeric ID of the student (must be greater than 0)',
   },
 ];

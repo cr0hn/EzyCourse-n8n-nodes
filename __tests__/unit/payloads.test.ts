@@ -1,9 +1,7 @@
+import { toEzyCourseInt, normalizeBaseUrl, parseTagIds } from '../../nodes/EzyCourse/utils/helpers';
+
 describe('Field mapping and transformations', () => {
   describe('isCompleted boolean to integer conversion', () => {
-    function toEzyCourseInt(value: boolean): number {
-      return value ? 1 : 0;
-    }
-
     it('converts true to 1', () => {
       expect(toEzyCourseInt(true)).toBe(1);
     });
@@ -14,10 +12,6 @@ describe('Field mapping and transformations', () => {
   });
 
   describe('baseUrl normalization', () => {
-    function normalizeBaseUrl(url: string): string {
-      return url.replace(/\/$/, '');
-    }
-
     it('removes trailing slash', () => {
       expect(normalizeBaseUrl('https://academy.com/')).toBe('https://academy.com');
     });
@@ -45,10 +39,6 @@ describe('Field mapping and transformations', () => {
   });
 
   describe('tag IDs format', () => {
-    function parseTagIds(input: string): number[] {
-      return input.split(',').map((s) => parseInt(s.trim(), 10)).filter((n) => !isNaN(n));
-    }
-
     it('parses comma-separated tag IDs', () => {
       expect(parseTagIds('1,2,3')).toEqual([1, 2, 3]);
     });

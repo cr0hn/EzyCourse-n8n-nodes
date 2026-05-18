@@ -1,6 +1,7 @@
 import {
   ICredentialTestRequest,
   ICredentialType,
+  IHttpRequestMethods,
   INodeProperties,
 } from 'n8n-workflow';
 
@@ -41,22 +42,19 @@ export class EzyCourseApi implements ICredentialType {
 
   test: ICredentialTestRequest = {
     request: {
-      baseURL: '={{$credentials.baseUrl}}',
-      url: '/api/ezycourse/webhooks/register-student/={{$credentials.accessToken}}',
-      method: 'POST',
+      method: 'POST' as IHttpRequestMethods,
+      url: '={{$credentials.baseUrl}}/api/ezycourse/webhooks/register-student/{{$credentials.accessToken}}',
       body: {},
-      // A missing-fields POST returns 422 (valid token) vs 401/403 (invalid token)
-      // This avoids needing a dedicated ping endpoint
+      // A missing-fields POST returns 422 (valid token) vs 401/403 (invalid token).
+      // 422 = Unprocessable Entity means the token was accepted but the empty
+      // body failed validation — which confirms the credentials are correct.
     },
     rules: [
       {
-        type: 'responseSuccessBody',
+        type: 'responseCode' as const,
         properties: {
-          // 422 = Unprocessable Entity (validation error) means token is valid
-          // We accept any 4xx that is not 401/403
-          key: '',
-          value: '',
-          message: 'Authentication successful',
+          value: 422,
+          message: 'Credentials are valid (server returned 422 as expected for empty payload)',
         },
       },
     ],

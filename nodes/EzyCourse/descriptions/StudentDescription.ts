@@ -1,4 +1,5 @@
 import { INodeProperties } from 'n8n-workflow';
+import { productTypeOptions } from './shared';
 
 export const studentOperations: INodeProperties[] = [
   {
@@ -130,20 +131,7 @@ export const studentFields: INodeProperties[] = [
         operation: ['registerAndEnroll'],
       },
     },
-    options: [
-      { name: 'Audio Library', value: 'audio_library' },
-      { name: 'Bundle Course', value: 'bundle_course' },
-      { name: 'Coaching Program', value: 'coaching_program' },
-      { name: 'Community', value: 'community' },
-      { name: 'Course', value: 'course' },
-      { name: 'Digital Product', value: 'digital_product' },
-      { name: 'Group', value: 'group' },
-      { name: 'Membership', value: 'membership' },
-      { name: 'Organization', value: 'organization' },
-      { name: 'Physical Product', value: 'physical_product' },
-      { name: 'Private Chat', value: 'private_chat' },
-      { name: 'Video Library', value: 'video_library' },
-    ],
+    options: productTypeOptions,
     description: 'Type of product to enroll the student in',
   },
   {
@@ -264,6 +252,7 @@ export const studentFields: INodeProperties[] = [
     displayName: 'Email',
     name: 'email',
     type: 'string',
+    typeOptions: { email: true },
     default: '',
     placeholder: 'name@email.com',
     displayOptions: {

@@ -19,7 +19,7 @@
     "type": "git",
     "url": "git+https://github.com/cr0hn/EzyCourse-n8n-nodes.git"
   },
-  "main": "index.js",
+  "main": "dist/nodes/EzyCourse/EzyCourse.node.js",
   "scripts": {
     "build": "tsc && gulp build:icons",
     "dev": "tsc --watch",

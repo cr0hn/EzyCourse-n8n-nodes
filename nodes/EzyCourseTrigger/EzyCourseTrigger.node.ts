@@ -1,4 +1,3 @@
-import * as crypto from 'crypto';
 import {
   IDataObject,
   IHookFunctions,
@@ -7,6 +6,8 @@ import {
   INodeTypeDescription,
   IWebhookResponseData,
 } from 'n8n-workflow';
+
+import { verifyWebhookSignature } from './utils/verifySignature';
 
 export class EzyCourseTrigger implements INodeType {
   description: INodeTypeDescription = {
@@ -119,6 +120,7 @@ export class EzyCourseTrigger implements INodeType {
     const req = this.getRequestObject();
     const bodyData = this.getBodyData();
 
+    // ── Signature verification ────────────────────────────────────────────────
     if (signatureToken) {
       const signatureHeaders = [
         'x-ezycourse-signature',
@@ -136,38 +138,47 @@ export class EzyCourseTrigger implements INodeType {
       }
 
       if (!receivedSig) {
-        return {
-          webhookResponse: { code: 401, body: 'Missing signature header' } as any,
-          noWebhookResponse: true,
-        };
+        const res = this.getResponseObject();
+        res.status(401).json({ error: 'Missing signature header' });
+        return { noWebhookResponse: true };
       }
 
-      const rawBody = JSON.stringify(bodyData);
-      const expectedSig = crypto
-        .createHmac('sha256', signatureToken)
-        .update(rawBody)
-        .digest('hex');
+      // BLOQ-1: use raw body buffer when available so that the HMAC is
+      // computed over the exact bytes EzyCourse signed, not a re-serialised
+      // version of the parsed object.
+      const rawBodyBuffer: Buffer | undefined = (req as any).rawBody;
+      const bodyString = rawBodyBuffer
+        ? rawBodyBuffer.toString('utf8')
+        : JSON.stringify(bodyData); // fallback: may differ from original bytes
 
-      const sigToCompare = receivedSig.startsWith('sha256=')
-        ? receivedSig.slice(7)
-        : receivedSig;
-
-      let isValid = false;
-      try {
-        isValid = crypto.timingSafeEqual(
-          Buffer.from(expectedSig, 'hex'),
-          Buffer.from(sigToCompare, 'hex'),
-        );
-      } catch {
-        isValid = false;
-      }
+      const isValid = verifyWebhookSignature(bodyString, signatureToken, receivedSig);
 
       if (!isValid) {
-        return {
-          webhookResponse: { code: 401, body: 'Invalid signature' } as any,
-          noWebhookResponse: true,
-        };
+        const res = this.getResponseObject();
+        res.status(401).json({ error: 'Invalid signature' });
+        return { noWebhookResponse: true };
       }
+    }
+
+    // ── Event filtering ───────────────────────────────────────────────────────
+    // m-1: filter incoming webhooks by the event type configured in the node.
+    // TODO: Confirm which field EzyCourse uses to indicate the event type in
+    // the payload (e.g. "event", "type", "trigger"). Send a real webhook from
+    // the EzyCourse dashboard and log the headers/body to determine the field
+    // name. Until confirmed, we check common candidates in order and skip
+    // filtering only if no event field is found in the payload.
+    const configuredEvent = this.getNodeParameter('event', 0) as string;
+    const eventPayload = bodyData as IDataObject;
+    const incomingEvent = (
+      eventPayload.event ??
+      eventPayload.type ??
+      eventPayload.trigger
+    ) as string | undefined;
+
+    if (incomingEvent && incomingEvent !== configuredEvent) {
+      const res = this.getResponseObject();
+      res.status(200).json({ message: 'Event ignored' });
+      return { noWebhookResponse: true };
     }
 
     return {

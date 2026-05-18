@@ -12,6 +12,7 @@ import { studentOperations, studentFields } from './descriptions/StudentDescript
 import { enrollmentOperations, enrollmentFields } from './descriptions/EnrollmentDescription';
 import { lessonOperations, lessonFields } from './descriptions/LessonDescription';
 import { tagOperations, tagFields } from './descriptions/TagDescription';
+import { normalizeBaseUrl, toEzyCourseInt, parseTagIds } from './utils/helpers';
 
 export class EzyCourse implements INodeType {
   description: INodeTypeDescription = {
@@ -20,7 +21,7 @@ export class EzyCourse implements INodeType {
     icon: 'file:ezycourse.svg',
     group: ['output'],
     version: 1,
-    subtitle: '={{$parameter["operation"] + ": " + $parameter["resource"]}}',
+    subtitle: '={{$parameter["resource"] + ": " + $parameter["operation"]}}',
     description: 'Interact with the EzyCourse platform',
     defaults: {
       name: 'EzyCourse',
@@ -75,7 +76,7 @@ export class EzyCourse implements INodeType {
     const returnData: INodeExecutionData[] = [];
     const credentials = await this.getCredentials('ezyCourseApi');
 
-    const baseUrl = (credentials.baseUrl as string).replace(/\/$/, '');
+    const baseUrl = normalizeBaseUrl(credentials.baseUrl as string);
     const accessToken = credentials.accessToken as string;
 
     for (let i = 0; i < items.length; i++) {
@@ -176,21 +177,31 @@ export class EzyCourse implements INodeType {
             body = {
               lesson_id: this.getNodeParameter('lessonId', i) as number,
               enrollment_id: this.getNodeParameter('enrollmentId', i) as number,
-              is_completed: isCompleted ? 1 : 0,
+              is_completed: toEzyCourseInt(isCompleted),
             };
           }
 
         } else if (resource === 'tag') {
           if (operation === 'addToStudent') {
             endpoint = `/api/ezycourse/webhooks/add-tag-for-student/${accessToken}`;
+            const tagIdsRaw = this.getNodeParameter('tagIds', i) as string;
+            const tagIds = parseTagIds(tagIdsRaw);
             body = {
-              tag_ids: this.getNodeParameter('tagIds', i) as string,
+              tag_ids: tagIds,
             };
             const identifyBy = this.getNodeParameter('identifyBy', i) as string;
             if (identifyBy === 'email') {
               body.email = this.getNodeParameter('email', i) as string;
             } else {
-              body.user_id = this.getNodeParameter('userId', i) as number;
+              const userId = this.getNodeParameter('userId', i, null) as number | null;
+              if (!userId) {
+                throw new NodeOperationError(
+                  this.getNode(),
+                  'User ID is required and must be greater than 0',
+                  { itemIndex: i },
+                );
+              }
+              body.user_id = userId;
             }
           }
         }
@@ -210,7 +221,7 @@ export class EzyCourse implements INodeType {
           headers: { 'Content-Type': 'application/json' },
         });
 
-        returnData.push({ json: response as IDataObject });
+        returnData.push({ json: response as IDataObject, pairedItem: { item: i } });
 
       } catch (error) {
         if (this.continueOnFail()) {
